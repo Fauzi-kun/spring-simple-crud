@@ -16,7 +16,7 @@ public class Person {
     private String email;
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
-    private List<PersonAddress> address;
+    private List<Address> address;
 
     // Getter Setter
     // Id
@@ -41,10 +41,10 @@ public class Person {
     }
 
     // Address
-    public void setAddress(List<PersonAddress> address) {
+    public void setAddress(List<Address> address) {
         this.address = address;
     }
-    public List<PersonAddress> getAddress() {
+    public List<Address> getAddress() {
         return address;
     }
 

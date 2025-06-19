@@ -19,7 +19,7 @@ public class AddressController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> addAddress(@PathVariable Long id, @RequestBody PersonAddress address) {
+    public ResponseEntity<?> addAddress(@PathVariable Long id, @RequestBody Address address) {
         Person person = personRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Id not found"));
     
         address.setPerson(person);
@@ -27,9 +27,9 @@ public class AddressController {
     }
 
     @GetMapping("/{id}")
-    public List<PersonAddress> getAddress(@PathVariable Long id) {
+    public List<Address> getAddress(@PathVariable Long id) {
         Person person = personRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Id not found"));
-        List<PersonAddress> address = person.getAddress(); 
+        List<Address> address = person.getAddress(); 
         return address;
     }
 
