@@ -1,53 +1,86 @@
-package com.example.demo.Controller;
+package com.example.demo.controller;
 
 import java.util.List;
-import com.example.demo.Entity.Person;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.Repository.PersonRepository;
-import com.example.demo.Exception.ResourceNotFoundException;
+
+import com.example.demo.dto.*;
+import com.example.demo.entity.Person;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.PersonRepository;
+
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/person")
 public class PersonController {
     
-    private PersonRepository repository;
+    private final PersonRepository repository;
 
     public PersonController(PersonRepository repository){
         this.repository = repository;
     }
     
     @PostMapping
-    public Person createPerson(@Valid @RequestBody Person person) {
-        return repository.save(person);
+    public ResponseEntity<?> createPerson(@Valid @RequestBody PersonRequestDTO dto) {
+        try {
+            Person person = new Person();
+            person.setName(dto.getName());
+            person.setEmail(dto.getEmail());
+            person.setPassword(dto.getPassword());
+
+            Person saved = repository.save(person);
+            PersonResponseDTO response = PersonToDTO(saved);
+
+            return ResponseEntity.ok(response); 
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Data invalid: " + e.getMessage());
+        }
     }
 
     @GetMapping
-    public List<Person> getAllPersons() {
-        return repository.findAll();
+    public ResponseEntity<?> getAllPersons() {       
+        List<PersonResponseDTO> finded = repository.findAll().stream().map(this::PersonToDTO)
+        .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(finded);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getPersonById(@PathVariable Long id) {
+    public ResponseEntity<?> getPersonById(@PathVariable Long id) {       
+        Person person = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Person not found"));
 
-        return repository.findById(id)
-        .<ResponseEntity<Object>>map(user -> ResponseEntity.ok(user))
-        .orElseGet(() -> ResponseEntity.status(404).body("User tidak ditemukan"));
+        PersonResponseDTO response = PersonToDTO(person);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public Person updatePerson(@PathVariable Long id, @Valid @RequestBody Person personDetails) {
+    public ResponseEntity<?> updatePerson(@PathVariable Long id, @Valid @RequestBody PersonRequestDTO dto) {
         Person person = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Person not found"));
-        person.setName(personDetails.getName());
-        return repository.save(person);
+        person.setName(dto.getName());
+        person.setEmail(dto.getEmail());
+        person.setPassword(dto.getPassword());
+        Person saved = repository.save(person);
+
+        PersonResponseDTO response = PersonToDTO(saved);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public void deletePerson(@PathVariable Long id){
+    public ResponseEntity<?> deletePerson(@PathVariable Long id){
         repository.deleteById(id);
+        return ResponseEntity.ok().body("Person deleted");
     }
     
+    private PersonResponseDTO PersonToDTO(Person person){
+        List<AddressResponseDTO> address = person.getAddress().stream()
+        .map(addr -> new AddressResponseDTO(addr.getId(), addr.getAddress()))
+        .collect(Collectors.toList());
+
+        return new PersonResponseDTO(person.getId(), person.getName(), person.getEmail(), address);
+    }
     
     
 }

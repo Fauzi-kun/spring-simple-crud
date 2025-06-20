@@ -1,22 +1,21 @@
-package com.example.demo.Entity;
+package com.example.demo.entity;
 
 import java.util.List;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class Person {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank(message = "nama tidak boleh kosong")
-    @Size(min = 2, max = 50, message = "nama harus antara 2 - 50 karakter")
     private String name;
     private String email;
+    private String password;
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
     private List<Address> address;
+
+    public Person(){}
 
     // Getter Setter
     // Id
@@ -46,6 +45,14 @@ public class Person {
     }
     public List<Address> getAddress() {
         return address;
+    }
+
+    // Password
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    public String getPassword() {
+        return password;
     }
 
 }
