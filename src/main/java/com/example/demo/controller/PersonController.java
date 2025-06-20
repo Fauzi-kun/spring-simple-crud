@@ -25,7 +25,6 @@ public class PersonController {
     
     @PostMapping
     public ResponseEntity<?> createPerson(@Valid @RequestBody PersonRequestDTO dto) {
-        try {
             Person person = new Person();
             person.setName(dto.getName());
             person.setEmail(dto.getEmail());
@@ -33,11 +32,7 @@ public class PersonController {
 
             Person saved = repository.save(person);
             PersonResponseDTO response = PersonToDTO(saved);
-
             return ResponseEntity.ok(response); 
-        } catch (Exception e) {
-            return ResponseEntity.status(400).body("Data invalid: " + e.getMessage());
-        }
     }
 
     @GetMapping
